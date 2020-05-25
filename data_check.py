@@ -1,6 +1,8 @@
 import os
 import sys
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from pycocotools.coco import COCO
 
@@ -22,6 +24,7 @@ img_path = base + "/data/val2017/" + str(img_dict['file_name'])
 print(img_dict['coco_url'])
 img = plt.imread(img_path)
 plt.imshow(img)
+plt.savefig('data_check.png')
 
 annIds = coco_caps.getAnnIds(imgIds=img_dict['id'])
 anns = coco_caps.loadAnns(annIds)
