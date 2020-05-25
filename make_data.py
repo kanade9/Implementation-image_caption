@@ -3,6 +3,8 @@ import sys
 import urllib
 import zipfile
 
+# trainは容量がでかいので使わないようにする
+
 url = 'http://images.cocodataset.org/zips/val2017.zip'
 save_path = "./data/val2017.zip"
 if not os.path.exists(save_path):
