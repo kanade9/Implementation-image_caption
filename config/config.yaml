@@ -4,11 +4,15 @@ image:
   crop_size: 224
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
-  batch_size: 32
 
 #モデルのパラメータ
 train:
-  num_epochs: 20
+  embed_size: 512
+  batch_size: 512
+  vocab_threshold: 5
+  vocab_from_file: True
+  hidden_size: 1024
+
 
 #最適化手法のパラメータ
 optimizer:
