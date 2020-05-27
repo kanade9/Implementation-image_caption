@@ -1,22 +1,19 @@
 import torch
-import hydra
 import torch.nn as nn
 import torchvision.models as models
 from torch.nn.utils.rnn import pack_padded_sequence
 
 
 class EncoderCNN(nn.Module):
-    @hydra.main(config_path="config/config.yaml")
     def __init__(self, embed_size):
-
-    # pretrainされたresnet512のモデルを読み込み、fc層に送る
-    super(EncoderCNN, self).__init__()
-    resnet = models.resnet152(pretrained=True)
-    # 最後のfc層を削除する
-    modules = list(resnet.children())[:-1]
-    self.resnet = nn.Sequential(*modules)
-    self.linear = nn.Linear(resnet.fc.in_features, embed_size)
-    self.bn = nn.BatchNorm1d(embed_size, momentum=cfg.train.momentum)
+        # pretrainされたresnet512のモデルを読み込み、fc層に送る
+        super(EncoderCNN, self).__init__()
+        resnet = models.resnet152(pretrained=True)
+        # 最後のfc層を削除する
+        modules = list(resnet.children())[:-1]
+        self.resnet = nn.Sequential(*modules)
+        self.linear = nn.Linear(resnet.fc.in_features, embed_size)
+        self.bn = nn.BatchNorm1d(embed_size, momentum=0.01)
 
     def forward(self, images):
         # 入力された画像から特徴ベクトルを抽出する
@@ -30,13 +27,12 @@ class EncoderCNN(nn.Module):
 
 class DecoderRNN(nn.Module):
     def __init__(self, embed_size, hidden_size, num_layers, max_seq_length=20):
-
-    # ハイパラをセットして層を組み立てる
-    super(DecoderRNN, self).__init__()
-    self.embed = nn.Embedding(vocab_size, embed_size)
-    self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
-    self.linear = nn.Linear(hidden_size, vocab_size)
-    self.max_seg_length = max_seq_length
+        # ハイパラをセットして層を組み立てる
+        super(DecoderRNN, self).__init__()
+        self.embed = nn.Embedding(vocab_size, embed_size)
+        self.lstm = nn.LSTM(embed_size, hidden_size, num_layers, batch_first=True)
+        self.linear = nn.Linear(hidden_size, vocab_size)
+        self.max_seg_length = max_seq_length
 
     def forward(self, features, captions, length):
         # 画像のベクトル特徴量をデコードしてキャプションを生成する
@@ -63,3 +59,11 @@ class DecoderRNN(nn.Module):
         sampled_ids = torch.stack(sampled_ids, 1)
         return sampled_ids
 
+
+# モデルの確認
+
+# embed_size = 512
+# encoder = EncoderCNN(embed_size)
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# encoder = encoder.to(device)
+# print(encoder)
