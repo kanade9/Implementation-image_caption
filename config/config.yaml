@@ -13,6 +13,14 @@ train:
   vocab_from_file: True
   hidden_size: 1024
 
+# resize.pyのパラメータ
+resize:
+  image_dir: './data/train2014/'
+  output_dir: './data/resized2014/'
+  image_size: 256
+
+
+
 
 #最適化手法のパラメータ
 optimizer:
