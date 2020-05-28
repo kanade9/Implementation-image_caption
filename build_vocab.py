@@ -1,8 +1,22 @@
 import nltk
+
 # オブジェクトをバイナリ列などに変換してファイルに書き込む
+import hydra
 import pickle
 from collections import Counter
 from pycocotools.coco import COCO
+
+nltk.download('punkt')
+
+
+@hydra.main(config_path='./config/config.yaml')
+def main(cfg):
+    vocab = build_vocab(json=hydra.utils.to_absolute_path(cfg.train.caption_path), threshold=cfg.train.threshold)
+    vocab_path = hydra.utils.to_absolute_path(cfg.train.vocab_path)
+    with open(vocab_path, 'wb') as f:
+        pickle.dump(vocab, f)
+    print("Total vocabulary size: {}".format((len(vocab))))
+    print("Saved the vocabulary wrapper to '{}'".format(vocab_path))
 
 
 class Vocabulary(object):
@@ -32,10 +46,10 @@ def build_vocab(json, threshold):
     counter = Counter()
     ids = coco.anns.keys()
     for i, id in enumerate(ids):
-        caption = str(coco.anns[id]['capiton'])
+        caption = str(coco.anns[id]['caption'])
         # captionをnltkでtokenizaする
         tokens = nltk.tokenize.word_tokenize((caption.lower()))
-        counter.update()
+        counter.update(tokens)
 
         if (i + 1) % 1000 == 0:
             print("[{}/{}] Tokenized the captions.".format(i + 1, len(ids)))
@@ -57,12 +71,5 @@ def build_vocab(json, threshold):
     return vocab
 
 
-
-@hydra.main(config_path="config/config.yaml")
-def main(cfg):
-    vocab = build_vocab(json=cfg.vocab.caption_path, threshold=cfg.vocab.threshold)
-    vocab_path = cfg.vocab.vocab_path
-    with open(vocab_path, 'wb') as f:
-        pickle.dump(vocab, f)
-    print("Total vocabulary size: {}".format((len(vocab))))
-    print("Saved the vocabulary wrapper to '{}'".format(vocab_path))
+if __name__ == '__main__':
+    main()

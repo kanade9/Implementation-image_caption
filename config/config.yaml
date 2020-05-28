@@ -9,13 +9,15 @@ image:
 train:
   embed_size: 256
   batch_size: 512
+  caption_path: './data/annotations/captions_train2014.json'
   vocab_threshold: 5
   vocab_from_file: True
   hidden_size: 512
-  encoder_path: 'models/encoder-5-3000.pkl'
-  decoder_path: 'models/encoder-5-3000.pkl'
-  vocab_path: 'data/vocab.pkl'
+  encoder_path: './models/encoder-5-3000.pkl'
+  decoder_path: './models/encoder-5-3000.pkl'
+  vocab_path: './data/vocab.pkl'
   num_layers: 1
+  threshold: 4
 
 # resize.pyのパラメータ
 resize:
@@ -23,6 +25,9 @@ resize:
   output_dir: './data/resized2014/'
   image_size: 256
 
+sample:
+  # sampleを動かす際の画像のパス
+  image_path: './data/sample_pic01.jpg'
 
 
 
