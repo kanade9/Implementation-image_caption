@@ -1,5 +1,6 @@
 import os
 import torch
+import hydra
 import pickle
 import numpy as np
 from PIL import Image
@@ -22,11 +23,12 @@ def load_image(iamge_path, transform=None):
     return image
 
 
-@hydra.main(config_path="config/config.yaml")
+@hydra.main(config_path="conf/config.yaml")
 def main(cfg):
+    # print(cfg.pretty())
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(cfg.image.mean, cfg.image.std)])
-
-    with open(cfg.train.vocab_path, 'rb') as f:
+    print(hydra.utils.to_absolute_path(cfg.train.vocab_path))
+    with open(hydra.utils.to_absolute_path(cfg.train.vocab_path), 'rb') as f:
         vocab = pickle.load(f)
 
     # モデルの構築
@@ -44,7 +46,7 @@ def main(cfg):
     image_tensor = image.to(device)
 
     # 入力した画像からキャプションを生成する
-    fwature = encoder(image_tensor)
+    feature = encoder(image_tensor)
     sampled_ids = decoder.sample(feature)
     sampled_ids = sampled_ids[0].cpu().numpy()
 
@@ -60,3 +62,7 @@ def main(cfg):
     print(sentence)
     image = Image.open(cfg.sample.image_path)
     plt.imshow(np.asarray(image))
+
+
+if __name__ == "__main__":
+    main()

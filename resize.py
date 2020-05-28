@@ -26,8 +26,12 @@ def resize_images(image_dir, output_dir, size):
 
 @hydra.main(config_path="config/config.yaml")
 def main(cfg):
-    image_dir = cfg.resize.image_dir
-    output_dir = cfg.resize.output_dir
+    image_dir = hydra.utils.to_absolute_path(cfg.resize.image_dir)
+    output_dir = hydra.utils.to_absolute_path(cfg.resize.output_dir)
     image_size = [cfg.resize.image_size, cfg.resize.image_size]
 
     resize_images(image_dir, output_dir, image_size)
+
+
+if __name__ == '__main__':
+    main()
