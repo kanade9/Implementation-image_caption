@@ -7,11 +7,15 @@ image:
 
 #モデルのパラメータ
 train:
-  embed_size: 512
+  embed_size: 256
   batch_size: 512
   vocab_threshold: 5
   vocab_from_file: True
-  hidden_size: 1024
+  hidden_size: 512
+  encoder_path: 'models/encoder-5-3000.pkl'
+  decoder_path: 'models/encoder-5-3000.pkl'
+  vocab_path: 'data/vocab.pkl'
+  num_layers: 1
 
 # resize.pyのパラメータ
 resize:
