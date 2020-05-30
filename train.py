@@ -21,7 +21,7 @@ def main(cfg):
 
     # 画像の前処理と正規化を行う
     transform = transforms.Compose([
-        transforms.RandomCrop(cfg.image.resize_size),
+        transforms.RandomCrop(cfg.image.crop_size),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(cfg.image.mean, cfg.image.std)
@@ -47,11 +47,9 @@ def main(cfg):
 
     # train
     total_step = len(data_loader)
-    print(data_loader)
 
     for epoch in range(cfg.train.num_epochs):
         for i, (images, captions, lengths) in enumerate(data_loader):
-            print(images,captions,lengths)
             # ミニバッジデータセットのセット
             images = images.to(device)
             captions = captions.to(device)

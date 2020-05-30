@@ -20,13 +20,13 @@ class EncoderCNN(nn.Module):
         with torch.no_grad():
             features = self.resnet(images)
         features = features.reshape(features.size(0), -1)
-        features - self.bn(self.linear(features))
+        features = self.bn(self.linear(features))
 
         return features
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, embed_size, hidden_size, num_layers, max_seq_length=20):
+    def __init__(self, embed_size, hidden_size,vocab_size,num_layers, max_seq_length=20):
         # ハイパラをセットして層を組み立てる
         super(DecoderRNN, self).__init__()
         self.embed = nn.Embedding(vocab_size, embed_size)
@@ -34,7 +34,7 @@ class DecoderRNN(nn.Module):
         self.linear = nn.Linear(hidden_size, vocab_size)
         self.max_seg_length = max_seq_length
 
-    def forward(self, features, captions, length):
+    def forward(self, features, captions, lengths):
         # 画像のベクトル特徴量をデコードしてキャプションを生成する
         embeddings = self.embed(captions)
         embeddings = torch.cat((features.unsqueeze(1), embeddings), 1)

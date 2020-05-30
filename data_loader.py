@@ -2,6 +2,7 @@ import os
 import nltk
 import torch
 import pickle
+import hydra
 import numpy as np
 from PIL import Image
 import torch.utils.data as data
@@ -31,7 +32,7 @@ class CocoDataset(data.Dataset):
 
         coco = self.coco
         vocab = self.vocab
-        ann_id = self.ids[idnex]
+        ann_id = self.ids[index]
         caption = coco.anns[ann_id]['caption']
         img_id = coco.anns[ann_id]['image_id']
         path = coco.loadImgs(img_id)[0]['file_name']
@@ -45,36 +46,44 @@ class CocoDataset(data.Dataset):
         caption = []
         caption.append(vocab('<start>'))
         caption.extend([vocab(token) for token in tokens])
+        caption.append(vocab('<end>'))
+        target = torch.Tensor(caption)
 
-    def collate_fn(data):
-        # (image,caption)というタプルになっているリストからミニバッジのテンソルを作成する
+        return image, target
 
-        # dataのimageは(3,256,256)のようなtensor、captionは可変の次元
+    def __len__(self):
+        return len(self.ids)
 
-        data.sort(key=lambda x: len(x[1]), reverse=True)
-        images, captions = zip(*data)
 
-        # タプル型の3Dテンソルを4Dのテンソルにすることで画像をマージする
-        images = torch.stack(images, 0)
+def collate_fn(data):
+    # (image,caption)というタプルになっているリストからミニバッジのテンソルを作成する
 
-        # タプル型の1Dテンソルを2Dのテンソルにすることでcaptionをマージする
-        lengths = [len(cap) for cap in captions]
-        targets = torch.zeros(len(captions), max(lengths)).long()
+    # dataのimageは(3,256,256)のようなtensor、captionは可変の次元
 
-        for i, cap in enumerate(captions):
-            end = lenghts[i]
-            targets[i, :end] = cap[:end]
+    data.sort(key=lambda x: len(x[1]), reverse=True)
+    images, captions = zip(*data)
 
-        # images:(batch_size,3,256,256)
-        # targets:(batch_size,padded_length)
-        # lengths:->list captionの長さ(paddingされてるかも)
-        return images, targets, lengths
+    # タプル型の3Dテンソルを4Dのテンソルにすることで画像をマージする
+    images = torch.stack(images, 0)
 
-    def get_loader(root, json, vocab, transform, batch_size, shuffle, num_workers):
+    # タプル型の1Dテンソルを2Dのテンソルにすることでcaptionをマージする
+    lengths = [len(cap) for cap in captions]
+    targets = torch.zeros(len(captions), max(lengths)).long()
 
-        coco = CocoDataset(root=root, json=json, vocab=vocab, transform=transform)
+    for i, cap in enumerate(captions):
+        end = lengths[i]
+        targets[i, :end] = cap[:end]
 
-        data_loader = torch.utils.data.DataLoader(dataset=coco, batch_size=batch_size, shuffle=shuffle,
-                                                  num_workers=num_workers, collate_fn=collate_fn)
+    # images:(batch_size,3,256,256)
+    # targets:(batch_size,padded_length)
+    # lengths:->list captionの長さ(paddingされてるかも)
+    return images, targets, lengths
 
-        return data_loader
+
+def get_loader(root, json, vocab, transform, batch_size, shuffle, num_workers):
+    coco = CocoDataset(root=root, json=json, vocab=vocab, transform=transform)
+
+    data_loader = torch.utils.data.DataLoader(dataset=coco, batch_size=batch_size, shuffle=shuffle,
+                                              num_workers=num_workers, collate_fn=collate_fn)
+
+    return data_loader
