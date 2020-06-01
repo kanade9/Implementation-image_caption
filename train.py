@@ -31,7 +31,7 @@ def main(cfg):
         vocab = pickle.load(f)
 
     # data_loaderの読み込み
-    data_loader = get_loader(hydra.utils.to_absolute_path(cfg.resize.image_dir),
+    data_loader = get_loader(hydra.utils.to_absolute_path(cfg.train.image_dir),
                              hydra.utils.to_absolute_path(cfg.train.caption_path), vocab, transform,
                              cfg.train.batch_size, shuffle=True,
                              num_workers=cfg.train.num_workers)

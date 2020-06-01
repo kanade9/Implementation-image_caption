@@ -38,11 +38,11 @@ def main(cfg):
     decoder = decoder.to(device)
 
     # 学習済みモデルのパラメータを読み込む
-    encoder.load_state_dict(torch.load(cfg.train.encoder_path))
-    decoder.load_state_dict(torch.load(cfg.train.decoder_path))
+    encoder.load_state_dict(torch.load(hydra.utils.to_absolute_path(cfg.train.encoder_path)))
+    decoder.load_state_dict(torch.load(hydra.utils.to_absolute_path(cfg.train.decoder_path)))
 
     # 画像の準備
-    image = load_image(cfg.sample.image_path, transform)
+    image = load_image(hydra.utils.to_absolute_path(cfg.sample.image_path), transform)
     image_tensor = image.to(device)
 
     # 入力した画像からキャプションを生成する
@@ -60,7 +60,7 @@ def main(cfg):
     sentence = ' '.join(sampled_caption)
 
     print(sentence)
-    image = Image.open(cfg.sample.image_path)
+    image = Image.open(hydra.utils.to_absolute_path(cfg.sample.image_path))
     plt.imshow(np.asarray(image))
 
 
