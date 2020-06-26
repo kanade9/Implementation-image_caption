@@ -47,7 +47,8 @@ def main(cfg):
 
     # 入力した画像からキャプションを生成する
     feature = encoder(image_tensor)
-    sampled_ids = decoder.sample(feature)
+    # sampled_ids = decoder.sample(feature)
+    sampled_ids = decoder.greedy_decode(features=feature)
     sampled_ids = sampled_ids[0].cpu().numpy()
 
     # word_idsをwordに変換する

@@ -1,8 +1,12 @@
 import torch
+import hydra
 import torch.nn as nn
 import torchvision.models as models
 from torch.nn.utils.rnn import pack_padded_sequence
 
+SOS_token = 0
+EOS_token = 1
+MAX_LENGTH = 50
 
 class EncoderCNN(nn.Module):
     def __init__(self, embed_size):
@@ -49,6 +53,7 @@ class DecoderRNN(nn.Module):
 
         sampled_ids = []
         inputs = features.unsqueeze(1)
+        # inputs.shape=[1,1,256]
         for i in range(self.max_seg_length):
             hiddens, states = self.lstm(inputs, states)
             outputs = self.linear(hiddens.squeeze(1))
@@ -58,6 +63,36 @@ class DecoderRNN(nn.Module):
             inputs = inputs.unsqueeze(1)
         sampled_ids = torch.stack(sampled_ids, 1)
         return sampled_ids
+
+    def greedy_decode(self,features,states=None):
+        '''
+        :param target_tensor: target indexes tensor of shape [B, T] where B is the batch size and T is the maximum length of the output sentence
+        :param decoder_hidden: input tensor of shape [1, B, H] for start of the decoding
+        Hはhidden sizeを表す
+        :param encoder_outputs: if you are using attention mechanism you can pass encoder outputs, [T, B, H] where T is the maximum length of input sentence
+        :return: decoded_batch
+        '''
+
+        batch_size, seq_len = 1,self.max_seg_length
+        decoded_batch = torch.zeros((batch_size, self.max_seg_length))
+        decoder_input = torch.LongTensor([[SOS_token] for _ in range(batch_size)])
+        inputs = features.unsqueeze(1)
+        for t in range(self.max_seg_length):
+            # decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_outputs)
+
+            hiddens, states = self.lstm(inputs, states)
+            outputs = self.linear(hiddens.squeeze(1))
+            decoder_output=outputs
+
+            topv, topi = decoder_output.topk(1)  # get candidates
+            topi = topi.view(-1)
+            inputs = self.embed(topi)
+            inputs = inputs.unsqueeze(1)
+            decoded_batch[:, t] = topi
+
+            decoder_input = topi.detach().view(-1, 1)
+
+        return decoded_batch
 
 
 # モデルの確認
